@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -25,6 +26,12 @@ public class TextReader extends Thread {
 
     @Override
     public void run() {
+
+        addToSet(readFromFile(fileName));
+
+    }
+
+    public ArrayList<String> readFromFile(String fileName) {
         try {
 
             Scanner reader;
@@ -33,7 +40,7 @@ public class TextReader extends Thread {
                 //читаем с интернет страницы
                 url = new URL(fileName);
                 reader = new Scanner(url.openStream(), "UTF-8");
-           //     System.out.println("Читаем с файла " + fileName);
+                //     System.out.println("Читаем с файла " + fileName);
             } else
 
                 //читаем с текстового файла
@@ -41,22 +48,22 @@ public class TextReader extends Thread {
             System.out.println("Читаем с файла " + fileName);
             while (reader.hasNext()) {
                 words.add(reader.nextLine());
-                               Thread.yield();
+                Thread.yield();
             }
 
         } catch (UnsupportedEncodingException e) {
-            System.out.println("Ошибка чтения файла " + fileName + "\n");
+            System.out.println("Ошибка чтения файла " + fileName + ". Не поддерживается кодировка. \n");
 
             // e.printStackTrace();
-            return;
+            return null;
         } catch (FileNotFoundException e) {
             System.out.println("Файл " + fileName + " не найден\n");
             //  e.printStackTrace();
-            return;
+            return null;
         } catch (IOException e) {
             System.out.println("Ошибка чтения файла " + fileName + "\n");
             //e.printStackTrace();
-            return;
+            return null;
         }
 
         ArrayList<String> list = new ArrayList<>();
@@ -79,39 +86,45 @@ public class TextReader extends Thread {
             }
 
         }
+        return list;
+    }
 
+    public void addToSet(List<String> list) {
         boolean flag = false;
-        synchronized (Main.uniqueWords) {
-            for (int i = 0; i < list.size(); i++) {
+        if (list != null) {
+            synchronized (Main.uniqueWords) {
+                for (int i = 0; i < list.size(); i++) {
 
-                String string = delPunct(list.get(i));
-                if (Main.uniqueWords.contains(string.toLowerCase().trim()) || (symbContain(string.trim()))) {
-                    synchronized (System.out) {
-                        System.out.println("Слово '" + string + "' уже встречалось в списке или в слове недопустимый символ");
-                        System.out.println("Поток " + Thread.currentThread().getName() + ", работающий с файлом '" +
-                                fileName + "', прекращается досрочно");
-                        System.out.println();
-                        flag = true;
-                        break;
+                    String string = delPunct(list.get(i));
+                    if (Main.uniqueWords.contains(string.toLowerCase().trim()) || (symbContain(string.trim()))) {
+                        synchronized (System.out) {
+                            System.out.println("Слово '" + string + "' уже встречалось в списке или в слове недопустимый символ");
+                            System.out.println("Поток " + Thread.currentThread().getName() + ", работающий с файлом '" +
+                                    fileName + "', прекращается досрочно");
+                            System.out.println();
+                            flag = true;
+                            break;
+                        }
+                    } else {
+                        Main.uniqueWords.add(string);
+                        // list.get(i).toLowerCase();
                     }
-                } else {
-                    Main.uniqueWords.add(string);
-                    // list.get(i).toLowerCase();
+
+                }
+                if (!flag) {
+                    synchronized (System.out) {
+
+                        System.out.println("Поток " + Thread.currentThread().getName() + " отработал без ошибок. " +
+                                "Повторяющихся слов в источнике нет");
+                        System.out.println();
+                    }
                 }
 
+
             }
-            if (!flag) {
-                synchronized (System.out) {
-
-                    System.out.println("Поток " + Thread.currentThread().getName() + " отработал без ошибок. " +
-                            "Повторяющихся слов в источнике нет");
-                    System.out.println();
-                }
-            }
-
-
         }
     }
+
 
     public boolean symbContain(String string) {
         for (int i = 0; i < string.length(); i++) {

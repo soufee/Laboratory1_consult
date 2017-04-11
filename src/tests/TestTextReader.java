@@ -3,7 +3,8 @@ package tests;
 import mainpack.TextReader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.ArrayList;
 
 /**
@@ -11,18 +12,35 @@ import java.util.ArrayList;
  */
 public class TestTextReader {
     public static TextReader textReader;
-    ArrayList<String> words = new ArrayList<>();
+    ArrayList<String> wordsthis = new ArrayList<>();
+
     @BeforeAll
     public static void init()
     {
-      textReader = new TextReader("C:\1\2.txt");
+      textReader = new TextReader("C://1//1.txt");
     }
 
     @Test
-    public void testRun()
+    public void testReadFromFile()
     {
-        textReader.run();
-        words = textReader.getWords();
+        textReader.start();
+            wordsthis = textReader.getWords();
+
+    }
+    @Test
+    public void testAddToSet()
+    {
+
+    }
+
+    @Test
+    public void testSymbContaint()
+    {
+
+    }
+
+    public void testDelPunct()
+    {
 
     }
 }
